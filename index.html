@@ -484,6 +484,13 @@ body.auth-required .app{
     background:linear-gradient(135deg, #efd7ee 0%, #e5d8f7 100%);
 }
 
+.product-image img,
+.product-image video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
 .product-info{
     padding:14px 12px 12px;
 }
@@ -932,7 +939,7 @@ textarea{
 
         <button class="drawer-item"
                 onclick="closeDrawer();openPage('digital')">
-            📦 Дижитал бүтээгдэхүүн
+            🎬 Худалдан авсан бичлэгүүд
         </button>
 
         <button class="drawer-item"
@@ -1006,6 +1013,49 @@ textarea{
 let cart = [];
 let purchasedContents = [];
 
+const mediaDbPromise = new Promise(function(resolve, reject) {
+    const request = indexedDB.open('maraltaro-media', 1);
+    request.onupgradeneeded = function() {
+        request.result.createObjectStore('files');
+    };
+    request.onsuccess = function() {
+        resolve(request.result);
+    };
+    request.onerror = function() {
+        reject(request.error);
+    };
+});
+
+function saveMediaFile(file) {
+    return mediaDbPromise.then(function(db) {
+        return new Promise(function(resolve, reject) {
+            const id = 'media-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+            const transaction = db.transaction('files', 'readwrite');
+            transaction.objectStore('files').put(file, id);
+            transaction.oncomplete = function() {
+                resolve(id);
+            };
+            transaction.onerror = function() {
+                reject(transaction.error);
+            };
+        });
+    });
+}
+
+function getMediaFile(id) {
+    return mediaDbPromise.then(function(db) {
+        return new Promise(function(resolve, reject) {
+            const request = db.transaction('files', 'readonly').objectStore('files').get(id);
+            request.onsuccess = function() {
+                resolve(request.result);
+            };
+            request.onerror = function() {
+                reject(request.error);
+            };
+        });
+    });
+}
+
 try {
     purchasedContents = JSON.parse(localStorage.getItem('maraltaro-purchases') || '[]');
 } catch (error) {
@@ -1067,6 +1117,15 @@ const posts = [
         desc: 'Өдөр тутмын стресс, сэтгэл хөдлөлөө зохицуулах audio туршлага.'
     }
 ];
+
+try {
+    const savedPosts = JSON.parse(localStorage.getItem('maraltaro-posts') || '[]');
+    if (Array.isArray(savedPosts)) {
+        posts.splice(0, posts.length, ...savedPosts);
+    }
+} catch (error) {
+    // Keep the built-in demo posts if saved data is unavailable.
+}
 
 let activeFilter = 'all';
 
@@ -1371,8 +1430,8 @@ function openNewPostModal() {
             <label>Үнэ</label>
             <input id="postPrice" type="number" value="19000">
 
-            <label>Зураг / файл</label>
-            <input type="file" accept="image/*,video/*,.pdf">
+            <label>Бичлэг / зураг / файл</label>
+            <input id="postFile" type="file" accept="image/*,video/*,.pdf">
 
             <label>Тайлбар</label>
             <textarea id="postDesc" placeholder="Бичлэгийн товч мэдээлэл..."></textarea>
@@ -1388,9 +1447,15 @@ function saveNewPost() {
     const type = document.getElementById('postType').value;
     const price = Number(document.getElementById('postPrice').value) || 0;
     const desc = document.getElementById('postDesc').value.trim();
+    const file = document.getElementById('postFile').files[0];
 
     if (!title || !desc || price <= 0) {
         showToast('Гарчиг, тайлбар, үнэ зөв оруулна уу');
+        return;
+    }
+
+    if (!file) {
+        showToast('Үзэх бичлэг эсвэл файл сонгоно уу');
         return;
     }
 
@@ -1402,18 +1467,33 @@ function saveNewPost() {
         Audio: '🎧'
     };
 
-    posts.unshift({
-        title,
-        category,
-        type,
-        price,
-        emoji: emojiMap[type] || '📄',
-        desc
-    });
+    saveMediaFile(file).then(function(mediaId) {
+        const post = {
+            title,
+            category,
+            type,
+            price,
+            emoji: emojiMap[type] || '📄',
+            desc,
+            mediaId,
+            mediaType: file.type,
+            mediaName: file.name
+        };
 
-    renderPosts();
-    closeModal();
-    showToast('Бичлэг амжилттай байршууллаа ✓');
+        posts.unshift(post);
+        try {
+            localStorage.setItem('maraltaro-posts', JSON.stringify(posts));
+        } catch (error) {
+            showToast('Файл хэт том байна. Жижиг бичлэг сонгоно уу');
+            return;
+        }
+
+        renderPosts();
+        closeModal();
+        showToast('Бичлэг амжилттай байршууллаа ✓');
+    }).catch(function() {
+        showToast('Файл уншиж чадсангүй');
+    });
 }
 
 function openPage(page) {
@@ -1506,7 +1586,11 @@ function buyContent(name, price) {
             price: price,
             type: purchasedPost ? purchasedPost.type : 'Контент',
             emoji: purchasedPost ? purchasedPost.emoji : '🎬',
-            desc: purchasedPost ? purchasedPost.desc : ''
+            desc: purchasedPost ? purchasedPost.desc : '',
+            mediaData: purchasedPost ? purchasedPost.mediaData : '',
+            mediaId: purchasedPost ? purchasedPost.mediaId : '',
+            mediaType: purchasedPost ? purchasedPost.mediaType : '',
+            mediaName: purchasedPost ? purchasedPost.mediaName : ''
         });
         localStorage.setItem('maraltaro-purchases', JSON.stringify(purchasedContents));
     }
@@ -1542,15 +1626,106 @@ function openPurchasedLibrary() {
 
 function watchPurchasedContent(index) {
     const item = purchasedContents[index];
+    if (item.mediaId) {
+        openModal('Бичлэг үзэх', '<div class="empty">⏳<br><br>Том файлыг ачаалж байна...</div>');
+        getMediaFile(item.mediaId).then(function(file) {
+            if (!file) {
+                openModal('Бичлэг үзэх', '<div class="empty">Файл олдсонгүй. Дахин байршуулна уу.</div>');
+                return;
+            }
+            item.mediaData = URL.createObjectURL(file);
+            renderMediaViewer(item);
+        }).catch(function() {
+            openModal('Бичлэг үзэх', '<div class="empty">Том файл ачаалж чадсангүй.</div>');
+        });
+        return;
+    }
+
+    renderMediaViewer(item);
+}
+
+function renderMediaViewer(item) {
+    let media = '';
+
+    if (item.mediaData && item.mediaType && item.mediaType.startsWith('video/')) {
+        media = `
+            <video id="purchasedVideo" controls playsinline preload="metadata" style="width:100%; border-radius:14px; margin-bottom:10px;" src="${item.mediaData}"></video>
+            <button id="unmuteBtn" class="primary" style="margin-bottom:14px;">🔊 Дууг асаах</button>
+            <div id="videoSoundStatus" style="color:#7a667e; font-size:12px; margin-bottom:14px;"></div>
+        `;
+    } else if (item.mediaData && item.mediaType && item.mediaType.startsWith('audio/')) {
+        media = `<audio controls preload="metadata" style="width:100%; margin-bottom:14px;" src="${item.mediaData}"></audio>`;
+    } else if (item.mediaData && item.mediaType && item.mediaType.startsWith('image/')) {
+        media = `<img style="width:100%; border-radius:14px; margin-bottom:14px;" src="${item.mediaData}" alt="${item.title}">`;
+    } else if (item.mediaData) {
+        media = `<a class="primary" style="display:block; text-align:center; text-decoration:none; margin-bottom:14px;" href="${item.mediaData}" download="${item.mediaName || item.title}">Файлыг нээх</a>`;
+    } else {
+        media = '<div class="empty" style="padding:18px 5px; background:#f8eef8; border-radius:14px; margin-bottom:14px;">Файл хавсаргагдаагүй байна.</div>';
+    }
+
     openModal('Бичлэг үзэх', `
         <div class="info-box">
-            <div style="font-size:42px; text-align:center; margin-bottom:14px;">${item.emoji}</div>
+            ${media}
             <h3>${item.title}</h3>
             <p style="color:#66596b; line-height:1.6; margin-top:10px;">${item.desc || 'Энэ контент таны худалдан авсан сан дотор байна.'}</p>
-            <br>
-            <div class="empty" style="padding:18px 5px; background:#f8eef8; border-radius:14px;">🎬 Таны худалдаж авсан контентыг энд үзнэ.</div>
         </div>
     `);
+
+    openVideoModal();
+}
+
+function openVideoModal() {
+    const myVideo = document.querySelector('#purchasedVideo');
+    const unmuteBtn = document.getElementById('unmuteBtn');
+    const soundStatus = document.getElementById('videoSoundStatus');
+
+    if (!myVideo) {
+        return;
+    }
+
+    function startVideoWithSound() {
+        myVideo.muted = false;
+        myVideo.volume = 1;
+        const playRequest = myVideo.play();
+
+        if (!playRequest) {
+            updateVideoSoundStatus();
+            return;
+        }
+
+        playRequest.then(function() {
+            updateVideoSoundStatus();
+            setTimeout(updateVideoSoundStatus, 1000);
+        }).catch(function(error) {
+            if (soundStatus) {
+                soundStatus.textContent = 'Browser бичлэгийг тоглуулахыг хориглолоо. Video-ийн play болон speaker icon дээр дарна уу.';
+            }
+            console.log('Video playback was blocked.', error);
+        });
+    }
+
+    function updateVideoSoundStatus() {
+        if (!soundStatus) return;
+
+        const hasAudioTrack = myVideo.audioTracks
+            ? myVideo.audioTracks.length > 0
+            : typeof myVideo.webkitAudioDecodedByteCount !== 'number' || myVideo.webkitAudioDecodedByteCount > 0;
+
+        if (!hasAudioTrack) {
+            soundStatus.textContent = 'Энэ video файлд audio track байхгүй байна. Дуу орсон video-г дахин upload хийнэ үү.';
+        } else {
+            soundStatus.textContent = 'Дуу асаалттай. Player-ийн speaker болон компьютерийн volume-оо шалгана уу.';
+        }
+    }
+
+    if (unmuteBtn) {
+        unmuteBtn.addEventListener('click', startVideoWithSound);
+    }
+
+    myVideo.muted = false;
+    myVideo.volume = 1;
+    myVideo.currentTime = 0;
+    myVideo.addEventListener('loadedmetadata', updateVideoSoundStatus, { once: true });
 }
 
 function addCart(name, price) {
