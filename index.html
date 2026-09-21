@@ -1004,6 +1004,14 @@ textarea{
 <script>
 
 let cart = [];
+let purchasedContents = [];
+
+try {
+    purchasedContents = JSON.parse(localStorage.getItem('maraltaro-purchases') || '[]');
+} catch (error) {
+    purchasedContents = [];
+}
+
 const OWNER_EMAIL = '1023maral@gmail.com';
 const GOOGLE_CLIENT_ID = '921369698667-qbt63j979f2mom3r15058kbis3js9031.apps.googleusercontent.com';
 let authenticatedEmail = '';
@@ -1450,9 +1458,7 @@ function openPage(page) {
     }
 
     else if (page === 'digital') {
-        openModal('Худалдан авсан бичлэгүүд', `
-            <div class="info-box">✅ Таны худалдаж авсан бичлэгүүдийн жагсаалт энд байна.</div>
-        `);
+        openPurchasedLibrary();
     }
 
     else if (page === 'contents') {
@@ -1490,10 +1496,60 @@ function openBuyModal(title, price, desc, category, type) {
 }
 
 function buyContent(name, price) {
+    const purchasedPost = posts.find(function(post) {
+        return post.title === name;
+    });
+
+    if (!purchasedContents.some(function(item) { return item.title === name; })) {
+        purchasedContents.push({
+            title: name,
+            price: price,
+            type: purchasedPost ? purchasedPost.type : 'Контент',
+            emoji: purchasedPost ? purchasedPost.emoji : '🎬',
+            desc: purchasedPost ? purchasedPost.desc : ''
+        });
+        localStorage.setItem('maraltaro-purchases', JSON.stringify(purchasedContents));
+    }
+
     addCart(name, price);
     closeModal();
     openModal('Захиалга', `
-        <div class="empty">✅<br><br>${name}<br><br>Амжилттай захиалагдлаа.<br><br>Таныг Maraltaro-гийн эрхтэй хэрэглэгчээр бүртгэлээ.</div>
+        <div class="empty">✅<br><br>${name}<br><br>Амжилттай захиалагдлаа.<br><br><button class="primary" onclick="openPurchasedLibrary()">Бичлэгээ үзэх</button></div>
+    `);
+}
+
+function openPurchasedLibrary() {
+    if (purchasedContents.length === 0) {
+        openModal('Худалдан авсан бичлэгүүд', `
+            <div class="empty">📚<br><br>Та одоогоор бичлэг худалдаж аваагүй байна.</div>
+        `);
+        return;
+    }
+
+    const content = purchasedContents.map(function(item, index) {
+        return `
+            <div class="info-box">
+                <div style="font-size:30px; margin-bottom:8px;">${item.emoji}</div>
+                <b>${item.title}</b>
+                <div style="color:#7a667e; font-size:13px; margin:8px 0 14px;">${item.type}</div>
+                <button class="primary" onclick="watchPurchasedContent(${index})">Үзэх</button>
+            </div>
+        `;
+    }).join('');
+
+    openModal('Худалдан авсан бичлэгүүд', content);
+}
+
+function watchPurchasedContent(index) {
+    const item = purchasedContents[index];
+    openModal('Бичлэг үзэх', `
+        <div class="info-box">
+            <div style="font-size:42px; text-align:center; margin-bottom:14px;">${item.emoji}</div>
+            <h3>${item.title}</h3>
+            <p style="color:#66596b; line-height:1.6; margin-top:10px;">${item.desc || 'Энэ контент таны худалдан авсан сан дотор байна.'}</p>
+            <br>
+            <div class="empty" style="padding:18px 5px; background:#f8eef8; border-radius:14px;">🎬 Таны худалдаж авсан контентыг энд үзнэ.</div>
+        </div>
     `);
 }
 
