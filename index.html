@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Maraltaro</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:
+        radial-gradient(circle at top left, #f8e7f4 0%, transparent 30%),
+        radial-gradient(circle at bottom right, #f1e4f8 0%, transparent 25%),
+        linear-gradient(135deg, #f2eef7 0%, #e9e3ef 100%);
+    color:#574d5c;
+}
+
+.app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    margin:auto;
+    background:linear-gradient(180deg, #fffafc 0%, #f9f1fa 100%);
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 30px 80px rgba(91, 62, 88, 0.12);
+}
+
+body.auth-required .app{
+    display:none;
+}
+
+.auth-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+}
+
+.auth-card{
+    width:100%;
+    max-width:420px;
+    background:rgba(255,255,255,.9);
+    border:1px solid rgba(143,118,153,.14);
+    border-radius:28px;
+    padding:34px 26px;
+    text-align:center;
+    box-shadow:0 25px 70px rgba(91,62,88,.14);
+}
+
+.auth-brand{
+    color:#703f72;
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:.14em;
+    margin-bottom:14px;
+}
+
+.auth-card h1{
+    color:#422f40;
+    font-size:25px;
+    margin-bottom:10px;
+}
+
+.auth-card p{
+    color:#7d7182;
+    font-size:14px;
+    line-height:1.6;
+    margin-bottom:20px;
+}
+
+#googleSignIn{
+    display:flex;
+    justify-content:center;
+    min-height:44px;
+}
+
+.auth-note{
+    color:#9a8e9d;
+    font-size:11px;
+    line-height:1.5;
+    margin-top:16px;
+}
+
+.auth-error{
+    color:#9b2a17;
+    font-size:13px;
+    margin-top:12px;
+}
+
+/* HEADER */
+
+.header{
+    height:74px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 18px;
+    background:rgba(250, 241, 251, 0.9);
+    backdrop-filter: blur(6px);
+    border-bottom:1px solid rgba(125, 82, 116, 0.08);
+    position:sticky;
+    top:0;
+    z-index:10;
+}
+
+.header button{
+    border:none;
+    background:rgba(255,255,255,.7);
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    font-size:24px;
+    color:#6c3d6e;
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(112, 63, 114, 0.08);
+}
+
+.logo{
+    font-weight:800;
+    color:#703f72;
+    font-size:18px;
+    letter-spacing:0.12em;
+}
+
+.cart{
+    position:relative;
+}
+
+.cart-number{
+    position:absolute;
+    top:-8px;
+    right:-7px;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    background:#8b4279;
+    color:white;
+    font-size:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+/* MAIN */
+
+.main{
+    padding:25px 20px 60px;
+}
+
+.top-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:8px;
+}
+
+.title{
+    font-size:29px;
+    font-weight:700;
+    margin-bottom:8px;
+}
+
+.post-btn{
+    border:none;
+    background:linear-gradient(135deg, #8d3d7a 0%, #a9477a 100%);
+    color:white;
+    border-radius:12px;
+    padding:10px 14px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 10px 18px rgba(141, 61, 122, 0.2);
+}
+
+.mode-toggle{
+    border:none;
+    background:#fff;
+    color:#6d3c6e;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 10px 18px rgba(91, 62, 88, 0.08);
+}
+
+.subtitle{
+    color:#8c8290;
+    font-size:14px;
+    margin-bottom:18px;
+    line-height:1.6;
+}
+
+.toolbar{
+    margin:0 0 20px;
+}
+
+.search-box{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:white;
+    border:1px solid #eadfe8;
+    border-radius:16px;
+    padding:12px 14px;
+    box-shadow:0 8px 18px rgba(119, 85, 120, 0.05);
+    margin-bottom:12px;
+}
+
+.search-box input{
+    border:none;
+    outline:none;
+    width:100%;
+    background:transparent;
+    font-size:14px;
+    color:#483b4c;
+    margin:0;
+    padding:0;
+}
+
+.chip-row{
+    display:flex;
+    gap:8px;
+    overflow:auto;
+    padding-bottom:4px;
+    scrollbar-width:none;
+}
+
+.chip-row::-webkit-scrollbar {
+    display:none;
+}
+
+.chip{
+    border:none;
+    background:#f3e9f5;
+    color:#634a6f;
+    padding:8px 12px;
+    border-radius:999px;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+}
+
+.chip.active{
+    background:linear-gradient(135deg, #8b3d77 0%, #ab4e7a 100%);
+    color:white;
+}
+
+.promo{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    background:linear-gradient(135deg, #f4dff0 0%, #efe7ff 100%);
+    border:1px solid rgba(154, 117, 170, 0.18);
+    border-radius:22px;
+    padding:16px 18px;
+    margin-bottom:20px;
+    box-shadow:0 10px 25px rgba(113, 79, 128, 0.08);
+}
+
+.promo-badge{
+    display:inline-block;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    background:#fff;
+    color:#7c3f74;
+    padding:5px 9px;
+    border-radius:999px;
+    font-weight:700;
+    margin-bottom:8px;
+}
+
+.promo h3{
+    font-size:15px;
+    line-height:1.4;
+    color:#5a3d5f;
+}
+
+.promo-btn{
+    border:none;
+    background:#92230f;
+    color:white;
+    padding:10px 14px;
+    border-radius:12px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 12px 18px rgba(146, 35, 15, 0.14);
+}
+
+/* PROFILE */
+
+.profile{
+    background:linear-gradient(135deg, #ffffff 0%, #fff7ff 100%);
+    border-radius:22px;
+    overflow:hidden;
+    margin-bottom:20px;
+    box-shadow:0 12px 28px rgba(70,40,70,.08);
+    border:1px solid rgba(143, 118, 153, 0.08);
+}
+
+.profile-cover{
+    height:110px;
+    background:linear-gradient(135deg, #f7d8ef 0%, #dfe1ff 100%);
+    position:relative;
+}
+
+.profile-cover img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+
+.profile-content{
+    padding:16px 18px 18px;
+    position:relative;
+    margin-top:-28px;
+}
+
+.avatar-wrap{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+}
+
+.avatar{
+    width:68px;
+    height:68px;
+    border-radius:50%;
+    background:#ded5df;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+    font-weight:bold;
+    color:#756778;
+    border:4px solid white;
+    box-shadow:0 12px 20px rgba(90, 62, 89, 0.14);
+    overflow:hidden;
+}
+
+.avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+
+.edit-profile-btn{
+    border:none;
+    background:#fff;
+    color:#713f71;
+    border-radius:10px;
+    padding:8px 12px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 10px 18px rgba(103, 66, 104, 0.08);
+}
+
+.email{
+    font-size:16px;
+    font-weight:700;
+    color:#422f40;
+}
+
+.account{
+    color:#968b99;
+    font-size:13px;
+    margin-top:5px;
+}
+
+.profile-bio{
+    font-size:13px;
+    line-height:1.6;
+    color:#645a68;
+    margin-top:10px;
+}
+
+.profile-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+}
+
+.meta-pill{
+    background:#f8edf7;
+    color:#6f456a;
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:11px;
+    font-weight:700;
+}
+
+/* MENU */
+
+.menu{
+    background:white;
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 12px 28px rgba(70,40,70,.08);
+    border:1px solid rgba(143, 118, 153, 0.08);
+}
+
+.menu-item{
+    width:100%;
+    height:64px;
+    padding:0 20px;
+    border:none;
+    border-bottom:1px solid #f0e9f1;
+    background:linear-gradient(180deg, #fff 0%, #fffafc 100%);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:#574d5c;
+    font-size:16px;
+    cursor:pointer;
+    text-align:left;
+    transition:all .2s ease;
+}
+
+.menu-item:last-child{
+    border-bottom:none;
+}
+
+.menu-item:hover{
+    background:#fdf4fa;
+    transform:translateX(2px);
+}
+
+.arrow{
+    font-size:26px;
+    color:#8b5f8f;
+}
+
+/* PRODUCTS */
+
+.products-title{
+    margin:30px 0 15px;
+    font-size:20px;
+}
+
+.products{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+}
+
+.product{
+    background:linear-gradient(180deg, #fff 0%, #fffafc 100%);
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 12px 24px rgba(70,40,70,.08);
+    border:1px solid rgba(143, 118, 153, 0.08);
+    transition:transform .2s ease, box-shadow .2s ease;
+}
+
+.product:hover{
+    transform:translateY(-4px);
+    box-shadow:0 18px 28px rgba(70,40,70,.12);
+}
+
+.product-image{
+    height:150px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:56px;
+    background:linear-gradient(135deg, #efd7ee 0%, #e5d8f7 100%);
+}
+
+.product-info{
+    padding:14px 12px 12px;
+}
+
+.content-meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:#876a90;
+    font-size:11px;
+    margin-bottom:9px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+}
+
+.product-name{
+    font-weight:700;
+    font-size:14px;
+    margin-bottom:8px;
+    color:#483b4c;
+}
+
+.product-desc{
+    font-size:12px;
+    color:#7c6d87;
+    margin-bottom:10px;
+    line-height:1.45;
+}
+
+.price-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+}
+
+.price{
+    color:#9b2a17;
+    font-weight:800;
+    font-size:15px;
+}
+
+.buy-mini{
+    border:none;
+    background:#fff1ef;
+    color:#9f3120;
+    padding:7px 10px;
+    border-radius:10px;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.add{
+    width:100%;
+    border:none;
+    background:linear-gradient(135deg, #992d12 0%, #b6371c 100%);
+    color:white;
+    padding:11px 10px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:700;
+    box-shadow:0 12px 18px rgba(146, 35, 15, 0.16);
+}
+
+/* DRAWER */
+
+.drawer{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    display:none;
+    z-index:100;
+}
+
+.drawer.active{
+    display:block;
+}
+
+.drawer-box{
+    width:85%;
+    max-width:390px;
+    height:100%;
+    background:#faf1fb;
+    padding:30px 22px;
+    animation:slide .25s ease;
+}
+
+@keyframes slide{
+    from{
+        transform:translateX(-100%);
+    }
+    to{
+        transform:translateX(0);
+    }
+}
+
+.drawer-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.drawer-title{
+    font-size:23px;
+    font-weight:bold;
+}
+
+.close{
+    border:none;
+    background:none;
+    font-size:30px;
+    color:#70406f;
+    cursor:pointer;
+}
+
+.drawer-item{
+    width:100%;
+    padding:17px 10px;
+    border:none;
+    background:none;
+    text-align:left;
+    font-size:16px;
+    color:#574d5c;
+    cursor:pointer;
+    border-radius:12px;
+}
+
+.drawer-item:hover{
+    background:#eee2f0;
+}
+
+.logout{
+    position:absolute;
+    bottom:30px;
+    width:calc(85% - 44px);
+    max-width:346px;
+    padding:16px;
+    border:none;
+    border-radius:16px;
+    background:#92230f;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+/* MODAL */
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:200;
+}
+
+.modal.active{
+    display:flex;
+}
+
+.modal-box{
+    width:100%;
+    max-width:480px;
+    max-height:85vh;
+    overflow:auto;
+    background:#faf1fb;
+    border-radius:28px 28px 0 0;
+    padding:25px;
+    animation:up .25s ease;
+}
+
+@keyframes up{
+    from{
+        transform:translateY(100%);
+    }
+    to{
+        transform:translateY(0);
+    }
+}
+
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.modal-title{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.modal-close{
+    border:none;
+    background:#e9dfea;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    font-size:22px;
+    cursor:pointer;
+}
+
+.info-box{
+    background:white;
+    border-radius:18px;
+    padding:20px;
+    margin-bottom:12px;
+}
+
+.primary{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:15px;
+    background:#92230f;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.empty{
+    text-align:center;
+    padding:35px 15px;
+    color:#8d8290;
+}
+
+input, select, textarea{
+    width:100%;
+    padding:14px;
+    border:1px solid #ddd2df;
+    border-radius:12px;
+    margin:10px 0 15px;
+    outline:none;
+    font:inherit;
+    background:#fff;
+}
+
+textarea{
+    min-height:90px;
+    resize:vertical;
+}
+
+.footer{
+    text-align:center;
+    color:#8d8290;
+    font-size:13px;
+    padding:30px 10px;
+}
+
+/* TOAST */
+
+.toast{
+    position:fixed;
+    left:50%;
+    bottom:25px;
+    transform:translateX(-50%) translateY(100px);
+    background:#433644;
+    color:white;
+    padding:13px 20px;
+    border-radius:13px;
+    transition:.3s;
+    z-index:500;
+    white-space:nowrap;
+}
+
+.toast.show{
+    transform:translateX(-50%) translateY(0);
+}
+
+</style>
+</head>
+
+<body class="auth-required">
+
+<section class="auth-screen" id="authScreen">
+    <div class="auth-card">
+        <div class="auth-brand">MARALTARO</div>
+        <h1>Нэвтэрч үргэлжлүүлнэ үү</h1>
+        <p>Эзэмшигч өөрийн контент, мэдээллээ удирдана. Бусад хэрэглэгч бичлэгүүдийг үзэж, худалдаж авна.</p>
+        <div id="googleSignIn"></div>
+        <div class="auth-error" id="authError"></div>
+        <div class="auth-note">Google-р нэвтрэхийн тулд сайтаа localhost эсвэл HTTPS домэйн дээр ажиллуулна уу.</div>
+    </div>
+</section>
+
+<div class="app">
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <button onclick="openDrawer()">
+            ☰
+        </button>
+
+        <div class="logo">
+            MARALTARO
+        </div>
+
+        <button class="mode-toggle" id="modeToggle" onclick="toggleMode()">
+            Эзэн горим
+        </button>
+
+        <button class="cart" onclick="openCart()">
+            🛒
+            <span class="cart-number" id="cartNumber">0</span>
+        </button>
+
+    </header>
+
+
+    <main class="main">
+
+        <div class="top-row">
+            <h1 class="title">
+                Бичлэгийн платформ
+            </h1>
+            <button class="post-btn creator-only" onclick="openNewPostModal()">
+                + Бичлэг
+            </button>
+        </div>
+
+        <p class="subtitle">
+            Maraltaro дээр та бичлэгээ байршуулж, хүмүүс уг контентыг худалдаж авах боломжтой.
+        </p>
+
+        <div class="toolbar">
+            <div class="search-box">
+                <span>🔎</span>
+                <input id="searchInput" type="text" placeholder="Бичлэг хайх..." />
+            </div>
+
+            <div class="chip-row">
+                <button class="chip active" data-filter="all">Бүгд</button>
+                <button class="chip" data-filter="Бизнес">Бизнес</button>
+                <button class="chip" data-filter="Маркетинг">Маркетинг</button>
+                <button class="chip" data-filter="Личийн">Личийн</button>
+                <button class="chip" data-filter="Video">Video</button>
+            </div>
+        </div>
+
+        <div class="promo creator-only">
+            <div>
+                <span class="promo-badge">New</span>
+                <h3>Шинэ бичлэгүүдээ худалдаанд гаргаарай</h3>
+            </div>
+            <button class="promo-btn" onclick="openPage('offers')">Үзэх</button>
+        </div>
+
+        <div class="profile" id="profileCard"></div>
+
+        <div class="menu creator-only">
+
+            <button class="menu-item" onclick="openPage('profile')">
+                <span>Миний профайл</span>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="menu-item" onclick="openPage('history')">
+                <span>Худалдан авалтын түүх</span>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="menu-item" onclick="openPage('mycontent')">
+                <span>Миний бичлэгүүд</span>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="menu-item" onclick="openPage('digital')">
+                <span>Худалдан авсан бичлэгүүд</span>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="menu-item" onclick="openPage('contents')">
+                <span>Бүх контент</span>
+                <span class="arrow">›</span>
+            </button>
+
+            <button class="menu-item" onclick="openPage('offers')">
+                <span>Багц боломжууд</span>
+                <span class="arrow">›</span>
+            </button>
+
+        </div>
+
+        <h2 class="products-title">
+            Сүүлийн бичлэгүүд
+        </h2>
+
+        <div class="products" id="contentGrid">
+        </div>
+
+        <div class="footer">
+            © 2026 Maraltaro • Бичлэг, контент, үнэ цэнийг зарах платформ.
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- DRAWER -->
+
+<div class="drawer" id="drawer">
+
+    <div class="drawer-box">
+
+        <div class="drawer-header">
+
+            <div>
+
+                <div class="drawer-title">
+                    Миний цэс
+                </div>
+
+                <small>
+                    1023maral@gmail.com
+                </small>
+
+            </div>
+
+            <button class="close"
+                    onclick="closeDrawer()">
+                ×
+            </button>
+
+        </div>
+
+
+        <button class="drawer-item"
+                onclick="closeDrawer();scrollTop()">
+            🏠 Нүүр
+        </button>
+
+        <button class="drawer-item"
+                onclick="closeDrawer();openPage('profile')">
+            👤 Миний бүртгэл
+        </button>
+
+        <button class="drawer-item"
+                onclick="closeDrawer();openPage('history')">
+            🧾 Худалдан авалтын түүх
+        </button>
+
+        <button class="drawer-item"
+                onclick="closeDrawer();openPage('digital')">
+            📦 Дижитал бүтээгдэхүүн
+        </button>
+
+        <button class="drawer-item"
+                onclick="closeDrawer();openPage('contents')">
+            🎬 Контентууд
+        </button>
+
+        <button class="drawer-item"
+                onclick="closeDrawer();openPage('posts')">
+            📝 Нийтлэл
+        </button>
+
+        <button class="drawer-item"
+                onclick="closeDrawer();openPage('community')">
+            💬 Community
+        </button>
+
+        <button class="drawer-item"
+                onclick="closeDrawer();openPage('offers')">
+            🎁 Багц үнийн санал
+        </button>
+
+
+        <button class="logout"
+                onclick="logout()">
+            ↪ Системээс гарах
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- MODAL -->
+
+<div class="modal" id="modal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <div class="modal-title"
+                 id="modalTitle">
+                Гарчиг
+            </div>
+
+            <button class="modal-close"
+                    onclick="closeModal()">
+                ×
+            </button>
+
+        </div>
+
+
+        <div id="modalContent">
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="toast"
+     id="toast">
+</div>
+
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+
+let cart = [];
+const OWNER_EMAIL = '1023maral@gmail.com';
+const GOOGLE_CLIENT_ID = '921369698667-qbt63j979f2mom3r15058kbis3js9031.apps.googleusercontent.com';
+let authenticatedEmail = '';
+let currentMode = 'buyer';
+
+const posts = [
+    {
+        title: 'Личийн өсөлтийн 7 алхам',
+        category: 'Бизнес',
+        type: 'PDF',
+        price: 19000,
+        emoji: '📘',
+        desc: 'Өөрийгөө хөгжүүлэх, зорилгоо тодорхойлох 7 практик алхам.'
+    },
+    {
+        title: 'Төрийн бус маркетинг',
+        category: 'Маркетинг',
+        type: 'Видео',
+        price: 29000,
+        emoji: '🎥',
+        desc: 'Энгийн платформоор дамжуулан борлуулалт нэмэгдүүлэх стратеги.'
+    },
+    {
+        title: 'Миний амжилтын тэмдэглэл',
+        category: 'Личийн',
+        type: 'Notebook',
+        price: 24000,
+        emoji: '📓',
+        desc: 'Төрийн сэтгэлгээ, өдөр тутмын дадал, зорилго бичих систем.'
+    },
+    {
+        title: 'YouTube тайлбар бичлэг',
+        category: 'Video',
+        type: 'Course',
+        price: 34900,
+        emoji: '🎬',
+        desc: 'Хүний анхаарлыг татах тайлбар, загвар, бүтэцтэй курс.'
+    },
+    {
+        title: 'Startup roadmap',
+        category: 'Бизнес',
+        type: 'PDF',
+        price: 26000,
+        emoji: '🚀',
+        desc: 'Старт-ап эхлүүлэх, үзүүлэгч болон хэрэглэгчийн төлөвлөлт.'
+    },
+    {
+        title: 'Сэтгэл хөдлөлөө удирдах',
+        category: 'Личийн',
+        type: 'Audio',
+        price: 21000,
+        emoji: '🎧',
+        desc: 'Өдөр тутмын стресс, сэтгэл хөдлөлөө зохицуулах audio туршлага.'
+    }
+];
+
+let activeFilter = 'all';
+
+function setAuthError(message) {
+    const error = document.getElementById('authError');
+    if (error) {
+        error.textContent = message;
+    }
+}
+
+function decodeGoogleCredential(credential) {
+    const payload = credential.split('.')[1];
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(normalized));
+}
+
+function handleGoogleCredential(response) {
+    try {
+        const user = decodeGoogleCredential(response.credential);
+        authenticatedEmail = (user.email || '').toLowerCase();
+
+        if (!authenticatedEmail) {
+            throw new Error('Google account email is missing');
+        }
+
+        currentMode = authenticatedEmail === OWNER_EMAIL ? 'creator' : 'buyer';
+        document.body.classList.remove('auth-required');
+        document.getElementById('authScreen').style.display = 'none';
+        applyMode();
+        renderProfile();
+        renderPosts();
+    } catch (error) {
+        setAuthError('Google бүртгэл уншиж чадсангүй. Дахин оролдоно уу.');
+    }
+}
+
+function initGoogleAuth() {
+    if (GOOGLE_CLIENT_ID.startsWith('YOUR_')) {
+        setAuthError('Google Client ID оруулсны дараа нэвтрэх товч гарна.');
+        return;
+    }
+
+    if (!window.google || !window.google.accounts || !window.google.accounts.id) {
+        setAuthError('Google нэвтрэх үйлчилгээ ачаалагдсангүй.');
+        return;
+    }
+
+    window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential
+    });
+
+    window.google.accounts.id.renderButton(document.getElementById('googleSignIn'), {
+        theme: 'outline',
+        size: 'large',
+        text: 'signin_with',
+        shape: 'pill',
+        width: 280
+    });
+}
+
+function toggleMode() {
+    currentMode = authenticatedEmail === OWNER_EMAIL ? 'creator' : 'buyer';
+    applyMode();
+}
+
+function applyMode() {
+    const isCreator = currentMode === 'creator';
+    const toggle = document.getElementById('modeToggle');
+
+    document.querySelectorAll('.creator-only').forEach(function(el) {
+        el.style.display = isCreator ? '' : 'none';
+    });
+
+    if (toggle) {
+        toggle.textContent = isCreator ? 'Эзэн горим' : 'Хэрэглэгчийн горим';
+        toggle.style.background = isCreator ? '#fff' : '#f5eaf5';
+    }
+
+    if (!isCreator && authenticatedEmail) {
+        const info = document.getElementById('modalContent');
+        if (info && info.innerHTML.trim() === '') {
+            openPage('profile');
+        }
+    }
+}
+
+function renderPosts() {
+    const container = document.getElementById('contentGrid');
+    const searchText = (document.getElementById('searchInput') || {}).value || '';
+
+    const filteredPosts = posts.filter(function(post) {
+        const matchesFilter = activeFilter === 'all' || post.category === activeFilter;
+        const matchesSearch = post.title.toLowerCase().includes(searchText.toLowerCase()) || post.desc.toLowerCase().includes(searchText.toLowerCase());
+        return matchesFilter && matchesSearch;
+    });
+
+    if (filteredPosts.length === 0) {
+        container.innerHTML = `
+            <div class="empty" style="grid-column:1 / -1; background:#fff; border-radius:18px; padding:30px 20px;">
+                🔎<br><br>Илэрц олдсонгүй.<br>Өөр түлхүүр үг хайна уу.
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = filteredPosts.map(function(post) {
+        return `
+            <div class="product">
+                <div class="product-image">${post.emoji}</div>
+                <div class="product-info">
+                    <div class="content-meta">
+                        <span>${post.category}</span>
+                        <span>${post.type}</span>
+                    </div>
+                    <div class="product-name">${post.title}</div>
+                    <div class="product-desc">${post.desc}</div>
+                    <div class="price-row">
+                        <div class="price">${post.price.toLocaleString()}₮</div>
+                        <button class="buy-mini" onclick="openBuyModal('${post.title}', ${post.price}, '${post.desc}', '${post.category}', '${post.type}')">Buy now</button>
+                    </div>
+                    <button class="add" onclick="addCart('${post.title}', ${post.price})">
+                        Сагсанд нэмэх
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function openDrawer() {
+    document.getElementById('drawer').classList.add('active');
+}
+
+function closeDrawer() {
+    document.getElementById('drawer').classList.remove('active');
+}
+
+function openModal(title, content) {
+    document.getElementById('modalTitle').innerHTML = title;
+    document.getElementById('modalContent').innerHTML = content;
+    document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+}
+
+const profile = {
+    name: 'Maral Taro',
+    email: '1023maral@gmail.com',
+    title: 'Байршуулагч / Худалдаачин',
+    bio: 'Би контент, бизнесийн мэдлэг, өөрийгөө хөгжүүлэх материалуудыг хуваалцдаг. Миний бичлэгүүдийг уншаад, хэрэгтэй үедээ худалдаж аваарай.',
+    niche: 'Бизнес • Личийн хөгжил',
+    avatar: '',
+    cover: ''
+};
+
+function renderProfile() {
+    const card = document.getElementById('profileCard');
+    if (!card) return;
+
+    const avatarContent = profile.avatar
+        ? `<img src="${profile.avatar}" alt="avatar">`
+        : profile.name.charAt(0).toUpperCase();
+
+    const coverContent = profile.cover
+        ? `<img src="${profile.cover}" alt="cover">`
+        : '';
+
+    card.innerHTML = `
+        <div class="profile-cover">${coverContent}</div>
+        <div class="profile-content">
+            <div class="avatar-wrap">
+                <div class="avatar">${avatarContent}</div>
+                <button class="edit-profile-btn creator-only" onclick="openProfileEditor()">Засах</button>
+            </div>
+            <div class="email">${profile.name}</div>
+            <div class="account">${profile.email} • ${profile.title}</div>
+            <div class="profile-bio">${profile.bio}</div>
+            <div class="profile-meta">
+                <span class="meta-pill">${profile.niche}</span>
+            </div>
+        </div>
+    `;
+}
+
+function openProfileEditor() {
+    openModal('Миний мэдээлэл засах', `
+        <div class="info-box">
+            <label>Нэр</label>
+            <input id="profileName" value="${profile.name}">
+
+            <label>И-мэйл</label>
+            <input id="profileEmail" value="${profile.email}">
+
+            <label>Албан тушаал</label>
+            <input id="profileTitle" value="${profile.title}">
+
+            <label>Тайлбар</label>
+            <textarea id="profileBio">${profile.bio}</textarea>
+
+            <label>Ниш</label>
+            <input id="profileNiche" value="${profile.niche}">
+
+            <label>Зураг</label>
+            <input id="avatarUpload" type="file" accept="image/*">
+
+            <label>Ковер зураг</label>
+            <input id="coverUpload" type="file" accept="image/*">
+
+            <button class="primary" onclick="saveProfile()">Хадгалах</button>
+        </div>
+    `);
+
+    setTimeout(function() {
+        document.getElementById('avatarUpload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profile.avatar = e.target.result;
+                    renderProfile();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('coverUpload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profile.cover = e.target.result;
+                    renderProfile();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }, 50);
+}
+
+function saveProfile() {
+    const name = document.getElementById('profileName').value.trim();
+    const email = document.getElementById('profileEmail').value.trim();
+    const title = document.getElementById('profileTitle').value.trim();
+    const bio = document.getElementById('profileBio').value.trim();
+    const niche = document.getElementById('profileNiche').value.trim();
+
+    if (!name || !email) {
+        showToast('Нэр болон имэйл шаардлагатай');
+        return;
+    }
+
+    profile.name = name;
+    profile.email = email;
+    profile.title = title || 'Байршуулагч / Худалдаачин';
+    profile.bio = bio || 'Би контент, бизнесийн мэдлэг, өөрийгөө хөгжүүлэх материалуудыг хуваалцдаг.';
+    profile.niche = niche || 'Бизнес • Личийн хөгжил';
+
+    renderProfile();
+    closeModal();
+    showToast('Мэдээлэл хадгалагдлаа ✓');
+}
+
+function openNewPostModal() {
+    openModal('Бичлэг байршуулах', `
+        <div class="info-box">
+            <label>Гарчиг</label>
+            <input id="postTitle" placeholder="Жишээ: Бизнесийн төлөвлөлтийн PDF">
+
+            <label>Ангилал</label>
+            <select id="postCategory">
+                <option>Бизнес</option>
+                <option>Маркетинг</option>
+                <option>Личийн</option>
+                <option>Video</option>
+                <option>Бусад</option>
+            </select>
+
+            <label>Төрөл</label>
+            <select id="postType">
+                <option>PDF</option>
+                <option>Видео</option>
+                <option>Course</option>
+                <option>Notebook</option>
+                <option>Audio</option>
+            </select>
+
+            <label>Үнэ</label>
+            <input id="postPrice" type="number" value="19000">
+
+            <label>Зураг / файл</label>
+            <input type="file" accept="image/*,video/*,.pdf">
+
+            <label>Тайлбар</label>
+            <textarea id="postDesc" placeholder="Бичлэгийн товч мэдээлэл..."></textarea>
+
+            <button class="primary" onclick="saveNewPost()">Байршуулах</button>
+        </div>
+    `);
+}
+
+function saveNewPost() {
+    const title = document.getElementById('postTitle').value.trim();
+    const category = document.getElementById('postCategory').value;
+    const type = document.getElementById('postType').value;
+    const price = Number(document.getElementById('postPrice').value) || 0;
+    const desc = document.getElementById('postDesc').value.trim();
+
+    if (!title || !desc || price <= 0) {
+        showToast('Гарчиг, тайлбар, үнэ зөв оруулна уу');
+        return;
+    }
+
+    const emojiMap = {
+        PDF: '📘',
+        Видео: '🎥',
+        Course: '🎓',
+        Notebook: '📓',
+        Audio: '🎧'
+    };
+
+    posts.unshift({
+        title,
+        category,
+        type,
+        price,
+        emoji: emojiMap[type] || '📄',
+        desc
+    });
+
+    renderPosts();
+    closeModal();
+    showToast('Бичлэг амжилттай байршууллаа ✓');
+}
+
+function openPage(page) {
+    if (!currentMode || currentMode !== 'creator') {
+        const buyerText = `
+            <div class="info-box">
+                <h3>${profile.name}</h3>
+                <p style="margin:10px 0; color:#5b4e61; line-height:1.6;">${profile.bio}</p>
+                <p style="margin:0; color:#7a657f;">${profile.email}</p>
+            </div>
+            <div class="info-box">
+                <strong>Бичлэгүүд</strong><br><br>
+                Та энэ хэсгээр зөвхөн контентыг үзэж, худалдан авах боломжтой.
+            </div>
+        `;
+
+        if (page === 'profile') {
+            openModal('Профайл', buyerText);
+            return;
+        }
+
+        if (page === 'history' || page === 'mycontent' || page === 'digital' || page === 'contents' || page === 'offers') {
+            openModal('Бичлэг худалдаж авах', buyerText);
+            return;
+        }
+    }
+
+    if (page === 'profile') {
+        openProfileEditor();
+    }
+
+    else if (page === 'history') {
+        openModal('Худалдан авалтын түүх', `
+            <div class="info-box">🧾 Одоогоор худалдан авалт байхгүй байна.</div>
+        `);
+    }
+
+    else if (page === 'mycontent') {
+        openModal('Миний бичлэгүүд', `
+            <div class="info-box">📦 Таны нийтэлсэн бичлэгүүд энд харагдана.</div>
+        `);
+    }
+
+    else if (page === 'digital') {
+        openModal('Худалдан авсан бичлэгүүд', `
+            <div class="info-box">✅ Таны худалдаж авсан бичлэгүүдийн жагсаалт энд байна.</div>
+        `);
+    }
+
+    else if (page === 'contents') {
+        openModal('Бүх контент', `
+            <div class="info-box">🎬 Видео бичлэг</div>
+            <div class="info-box">📚 PDF материал</div>
+            <div class="info-box">🎧 Audio контент</div>
+        `);
+    }
+
+    else if (page === 'offers') {
+        openModal('Багц боломжууд', `
+            <div class="info-box">
+                <h3>✨ Maraltaro Starter Pack</h3><br>
+                PDF бичлэг<br>
+                Видео курс<br>
+                Личийн хөгжлийн нотолгоо<br><br>
+                <b style="color:#92230f">59,900₮</b><br><br>
+                <button class="primary" onclick="showToast('Багц сонгогдлоо')">Багц авах</button>
+            </div>
+        `);
+    }
+}
+
+function openBuyModal(title, price, desc, category, type) {
+    openModal('Бичлэг худалдаж авах', `
+        <div class="info-box">
+            <h3 style="margin-bottom:10px;">${title}</h3>
+            <div style="color:#7a667e; font-size:13px; margin-bottom:14px;">${category} • ${type}</div>
+            <p style="color:#584d5d; line-height:1.6; margin-bottom:16px;">${desc}</p>
+            <div style="font-size:24px; font-weight:800; color:#92230f; margin-bottom:18px;">${price.toLocaleString()}₮</div>
+            <button class="primary" onclick="buyContent('${title}', ${price})">Төлбөр төлөх</button>
+        </div>
+    `);
+}
+
+function buyContent(name, price) {
+    addCart(name, price);
+    closeModal();
+    openModal('Захиалга', `
+        <div class="empty">✅<br><br>${name}<br><br>Амжилттай захиалагдлаа.<br><br>Таныг Maraltaro-гийн эрхтэй хэрэглэгчээр бүртгэлээ.</div>
+    `);
+}
+
+function addCart(name, price) {
+    cart.push({ name, price });
+    document.getElementById('cartNumber').innerText = cart.length;
+    showToast('Сагсанд нэмэгдлээ ✓');
+}
+
+function openCart() {
+    if (cart.length === 0) {
+        openModal('Миний сагс', `
+            <div class="empty">🛒<br><br>Таны сагс хоосон байна.</div>
+        `);
+        return;
+    }
+
+    let total = 0;
+    let html = '';
+
+    cart.forEach(function(item, index) {
+        total += item.price;
+        html += `
+            <div class="info-box">
+                <b>${item.name}</b><br><br>
+                ${item.price.toLocaleString()}₮<br><br>
+                <button onclick="removeCart(${index})" style="border:none; background:#eee; padding:8px 12px; border-radius:8px; cursor:pointer;">Устгах</button>
+            </div>
+        `;
+    });
+
+    html += `
+        <div class="info-box">
+            <b>Нийт: ${total.toLocaleString()}₮</b><br><br>
+            <button class="primary" onclick="checkout()">Захиалга баталгаажуулах</button>
+        </div>
+    `;
+
+    openModal('Миний сагс', html);
+}
+
+function removeCart(index) {
+    cart.splice(index, 1);
+    document.getElementById('cartNumber').innerText = cart.length;
+    openCart();
+}
+
+function checkout() {
+    cart = [];
+    document.getElementById('cartNumber').innerText = 0;
+    openModal('Захиалга', `
+        <div class="empty">✅<br><br>Захиалга амжилттай бүртгэгдлээ.<br><br>Танд баярлалаа!</div>
+    `);
+}
+
+function saveProfile() {
+    const email = document.getElementById('email') ? document.getElementById('email').value : profile.email;
+    if (email === '') {
+        showToast('И-мэйл оруулна уу');
+        return;
+    }
+
+    if (document.getElementById('email')) {
+        document.querySelector('.email').innerText = email;
+    }
+
+    closeModal();
+    showToast('Мэдээлэл хадгалагдлаа ✓');
+}
+
+function logout() {
+    closeDrawer();
+    showToast('Системээс гарлаа');
+}
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.innerText = message;
+    toast.classList.add('show');
+
+    setTimeout(function() {
+        toast.classList.remove('show');
+    }, 2000);
+}
+
+function scrollTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+    searchInput.addEventListener('input', renderPosts);
+}
+
+document.querySelectorAll('.chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+        document.querySelectorAll('.chip').forEach(function(item) {
+            item.classList.remove('active');
+        });
+        chip.classList.add('active');
+        activeFilter = chip.dataset.filter;
+        renderPosts();
+    });
+});
+
+applyMode();
+renderProfile();
+renderPosts();
+window.addEventListener('load', initGoogleAuth);
+</script>
+
+</body>
+</html>
