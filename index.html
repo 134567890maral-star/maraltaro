@@ -187,8 +187,9 @@ body.auth-required .app{
     background:#fff;
     color:#6d3c6e;
     border-radius:999px;
-    padding:8px 12px;
-    font-size:11px;
+    padding:6px 10px !important;
+    font-size:9px !important;
+    line-height:1;
     font-weight:700;
     cursor:pointer;
     box-shadow:0 10px 18px rgba(91, 62, 88, 0.08);
@@ -764,11 +765,9 @@ textarea{
 <section class="auth-screen" id="authScreen">
     <div class="auth-card">
         <div class="auth-brand">MARALTARO</div>
-        <h1>Нэвтэрч үргэлжлүүлнэ үү</h1>
-        <p>Эзэмшигч өөрийн контент, мэдээллээ удирдана. Бусад хэрэглэгч бичлэгүүдийг үзэж, худалдаж авна.</p>
+        <h1>Google хаягаараа нэвтэрнэ үү</h1>
         <div id="googleSignIn"></div>
         <div class="auth-error" id="authError"></div>
-        <div class="auth-note">Google-р нэвтрэхийн тулд сайтаа localhost эсвэл HTTPS домэйн дээр ажиллуулна уу.</div>
     </div>
 </section>
 
@@ -1208,7 +1207,7 @@ function closeModal() {
     document.getElementById('modal').classList.remove('active');
 }
 
-const profile = {
+const defaultProfile = {
     name: 'Maral Taro',
     email: '1023maral@gmail.com',
     title: 'Байршуулагч / Худалдаачин',
@@ -1217,6 +1216,17 @@ const profile = {
     avatar: '',
     cover: ''
 };
+
+let profile = Object.assign({}, defaultProfile);
+
+try {
+    const savedProfile = localStorage.getItem('maraltaro-profile');
+    if (savedProfile) {
+        profile = Object.assign({}, defaultProfile, JSON.parse(savedProfile));
+    }
+} catch (error) {
+    profile = Object.assign({}, defaultProfile);
+}
 
 function renderProfile() {
     const card = document.getElementById('profileCard');
@@ -1320,6 +1330,7 @@ function saveProfile() {
     profile.bio = bio || 'Би контент, бизнесийн мэдлэг, өөрийгөө хөгжүүлэх материалуудыг хуваалцдаг.';
     profile.niche = niche || 'Бизнес • Личийн хөгжил';
 
+    localStorage.setItem('maraltaro-profile', JSON.stringify(profile));
     renderProfile();
     closeModal();
     showToast('Мэдээлэл хадгалагдлаа ✓');
@@ -1536,21 +1547,6 @@ function checkout() {
     openModal('Захиалга', `
         <div class="empty">✅<br><br>Захиалга амжилттай бүртгэгдлээ.<br><br>Танд баярлалаа!</div>
     `);
-}
-
-function saveProfile() {
-    const email = document.getElementById('email') ? document.getElementById('email').value : profile.email;
-    if (email === '') {
-        showToast('И-мэйл оруулна уу');
-        return;
-    }
-
-    if (document.getElementById('email')) {
-        document.querySelector('.email').innerText = email;
-    }
-
-    closeModal();
-    showToast('Мэдээлэл хадгалагдлаа ✓');
 }
 
 function logout() {
